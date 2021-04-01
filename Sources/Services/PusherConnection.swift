@@ -3,6 +3,7 @@ import WebSocketKit
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
+import NIO
 
 // swiftlint:disable file_length type_body_length
 
@@ -15,6 +16,7 @@ import FoundationNetworking
     open var socketId: String?
     open var connectionState = ConnectionState.disconnected
     open var channels = PusherChannels()
+	open var socketGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     open var socket: WebSocket!
     open var URLSession: Foundation.URLSession
     open var userDataFetcher: (() -> PusherPresenceChannelMember)?
@@ -280,18 +282,22 @@ import FoundationNetworking
             return
         } else {
             updateConnectionState(to: .connecting)
-//            self.socket.connect()
 
 			let _url = URL(string: url)!
 			let scheme = _url.scheme ?? "ws"
-			let wsClient = WebSocketClient(eventLoopGroupProvider: .createNew)
+			var path = _url.path
+			if let query = _url.query {
+				path += "?" + query
+			}
+			let wsClient = WebSocketClient(eventLoopGroupProvider: .shared(socketGroup))
 			_ = wsClient.connect(
 				scheme: scheme,
 				host: _url.host ?? "localhost",
 				port: _url.port ?? (scheme == "wss" ? 443 : 80),
+				path: path,
 				onUpgrade: { ws in
 					self.socket = ws
-					self.connectionState = .connected
+					self.socketConnected = true
 					self.handleSocket(ws)
 				}
 			)
