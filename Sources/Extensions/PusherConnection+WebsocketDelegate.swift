@@ -1,8 +1,22 @@
 import Foundation
 import Network
-import NWWebSocket
+import WebSocketKit
+import NIOWebSocket
 
-extension PusherConnection: WebSocketConnectionDelegate {
+extension PusherConnection {
+
+	func handleSocket(_ ws: WebSocket) {
+		ws.onText(webSocketDidReceiveMessage)
+		ws.onPong(webSocketDidReceivePong)
+		ws.onClose.whenComplete { result in
+			do {
+				try result.get()
+			} catch {
+				self.webSocketDidReceiveError(connection: ws, error: error)
+			}
+			self.webSocketDidDisconnect(connection: ws, closeCode: ws.closeCode ?? .normalClosure, reason: nil)
+		}
+	}
 
     /**
         Delegate method called when a message is received over a websocket
@@ -10,32 +24,32 @@ extension PusherConnection: WebSocketConnectionDelegate {
         - parameter connection:   The websocket that has received the message
         - parameter string: The message received over the websocket
     */
-    public func webSocketDidReceiveMessage(connection: WebSocketConnection, string: String) {
-        Logger.shared.debug(for: .receivedMessage, context: string)
+	func webSocketDidReceiveMessage(connection: WebSocket, string: String) {
+		Logger.shared.debug(for: .receivedMessage, context: string)
 
-        guard let payload = EventParser.getPusherEventJSON(from: string),
-            let event = payload[Constants.JSONKeys.event] as? String
-        else {
-            Logger.shared.debug(for: .unableToHandleIncomingMessage,
-                                context: string)
-            return
-        }
+		guard let payload = EventParser.getPusherEventJSON(from: string),
+			let event = payload[Constants.JSONKeys.event] as? String
+		else {
+			Logger.shared.debug(for: .unableToHandleIncomingMessage,
+								context: string)
+			return
+		}
 
-        if event == Constants.Events.Pusher.error {
-            guard let error = PusherError(jsonObject: payload) else {
-                Logger.shared.debug(for: .unableToHandleIncomingError,
-                                    context: string)
-                return
-            }
-            self.handleError(error: error)
-        } else {
-            self.eventQueue.enqueue(json: payload)
-        }
-    }
+		if event == Constants.Events.Pusher.error {
+			guard let error = PusherError(jsonObject: payload) else {
+				Logger.shared.debug(for: .unableToHandleIncomingError,
+									context: string)
+				return
+			}
+			self.handleError(error: error)
+		} else {
+			self.eventQueue.enqueue(json: payload)
+		}
+	}
 
     /// Delegate method called when a pong is received over a websocket
     /// - Parameter connection: The websocket that has received the pong
-    public func webSocketDidReceivePong(connection: WebSocketConnection) {
+    public func webSocketDidReceivePong(connection: WebSocket) {
         Logger.shared.debug(for: .pongReceived)
         resetActivityTimeoutTimer()
     }
@@ -47,8 +61,8 @@ extension PusherConnection: WebSocketConnectionDelegate {
      - parameter closeCode: The closure code for the websocket connection.
      - parameter reason: Optional further information on the connection closure.
      */
-    public func webSocketDidDisconnect(connection: WebSocketConnection,
-                                       closeCode: NWProtocolWebSocket.CloseCode,
+    public func webSocketDidDisconnect(connection: WebSocket,
+                                       closeCode: WebSocketErrorCode,
                                        reason: Data?) {
         // Handles setting channel subscriptions to unsubscribed whether disconnection
         // is intentional or not
@@ -75,7 +89,7 @@ extension PusherConnection: WebSocketConnectionDelegate {
         // Attempt reconnect if possible
 
         // `autoReconnect` option is ignored if the closure code is within the 4000-4999 range
-        if case .privateCode = closeCode {} else {
+        if case .unknown = closeCode {} else {
             guard self.options.autoReconnect else {
                 return
             }
@@ -89,26 +103,26 @@ extension PusherConnection: WebSocketConnectionDelegate {
         attemptReconnect(closeCode: closeCode)
     }
 
-    public func webSocketViabilityDidChange(connection: WebSocketConnection, isViable: Bool) {
-        if isViable {
-            Logger.shared.debug(for: .networkConnectionViable)
-        } else {
-            Logger.shared.debug(for: .networkConnectionUnviable)
-        }
-    }
+//    public func webSocketViabilityDidChange(connection: WebSocketConnection, isViable: Bool) {
+//        if isViable {
+//            Logger.shared.debug(for: .networkConnectionViable)
+//        } else {
+//            Logger.shared.debug(for: .networkConnectionUnviable)
+//        }
+//    }
 
-    public func webSocketDidAttemptBetterPathMigration(result: Result<WebSocketConnection, NWError>) {
-        switch result {
-        case .success:
-            updateConnectionState(to: .reconnecting)
-
-        case .failure(let error):
-            Logger.shared.debug(for: .errorReceived,
-                                context: """
-                Path migration error: \(error.debugDescription)
-                """)
-        }
-    }
+//    public func webSocketDidAttemptBetterPathMigration(result: Result<WebSocketConnection, NWError>) {
+//        switch result {
+//        case .success:
+//            updateConnectionState(to: .reconnecting)
+//
+//        case .failure(let error):
+//            Logger.shared.debug(for: .errorReceived,
+//                                context: """
+//                Path migration error: \(error.debugDescription)
+//                """)
+//        }
+//    }
 
     /**
      Attempt to reconnect triggered by a disconnection.
@@ -117,7 +131,7 @@ extension PusherConnection: WebSocketConnectionDelegate {
      `PusherChannelsProtocolCloseCode.ReconnectionStrategy`.
      - Parameter closeCode: The closure code received by the WebSocket connection.
      */
-    func attemptReconnect(closeCode: NWProtocolWebSocket.CloseCode = .protocolCode(.normalClosure)) {
+    func attemptReconnect(closeCode: WebSocketErrorCode = .normalClosure) {
         guard connectionState != .connected else {
             return
         }
@@ -129,7 +143,7 @@ extension PusherConnection: WebSocketConnectionDelegate {
         // Reconnect attempt according to Pusher Channels Protocol close code (if present).
         // (Otherwise, the default behavior is to attempt reconnection after backing off).
         var channelsCloseCode: ChannelsProtocolCloseCode?
-        if case let .privateCode(code) = closeCode {
+        if case let .unknown(code) = closeCode {
             channelsCloseCode = ChannelsProtocolCloseCode(rawValue: code)
         }
         let strategy = channelsCloseCode?.reconnectionStrategy ?? .reconnectAfterBackingOff
@@ -197,22 +211,8 @@ extension PusherConnection: WebSocketConnectionDelegate {
     /// - Parameters:
     ///   - closeCode: The closure code for the websocket connection.
     ///   - reason: Optional further information on the connection closure.
-    func logDisconnection(closeCode: NWProtocolWebSocket.CloseCode, reason: Data?) {
-        var rawCode: UInt16!
-        switch closeCode {
-        case .protocolCode(let definedCode):
-            rawCode = definedCode.rawValue
-
-        case .applicationCode(let applicationCode):
-            rawCode = applicationCode
-
-        case .privateCode(let protocolCode):
-            rawCode = protocolCode
-        @unknown default:
-            fatalError()
-        }
-
-        var closeMessage: String = "Close code: \(String(describing: rawCode))."
+    func logDisconnection(closeCode: WebSocketErrorCode, reason: Data?) {
+        var closeMessage: String = "Close code: \(String(describing: closeCode))."
         if let reason = reason,
             let reasonString = String(data: reason, encoding: .utf8) {
             closeMessage += " Reason: \(reasonString)."
@@ -227,18 +227,18 @@ extension PusherConnection: WebSocketConnectionDelegate {
 
         - parameter connection:    The websocket that connected
     */
-    public func webSocketDidConnect(connection: WebSocketConnection) {
+    public func webSocketDidConnect(connection: WebSocket) {
         self.socketConnected = true
     }
 
-    public func webSocketDidReceiveMessage(connection: WebSocketConnection, data: Data) {
+    public func webSocketDidReceiveMessage(connection: WebSocket, data: Data) {
         //
     }
 
-    public func webSocketDidReceiveError(connection: WebSocketConnection, error: NWError) {
+    public func webSocketDidReceiveError(connection: WebSocket, error: Error) {
         Logger.shared.debug(for: .errorReceived,
                             context: """
-            Error: \(error.debugDescription)
+            Error: \(error.localizedDescription)
             """)
     }
 }

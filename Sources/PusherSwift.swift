@@ -1,5 +1,5 @@
 import Foundation
-import NWWebSocket
+import WebSocketKit
 
 let PROTOCOL = 7
 let VERSION = "9.2.2"
@@ -27,11 +27,11 @@ let CLIENT_NAME = "pusher-websocket-swift"
     public init(key: String, options: PusherClientOptions = PusherClientOptions()) {
         self.key = key
         let urlString = URL.channelsSocketUrl(key: key, options: options)
-        let wsOptions = NWWebSocket.defaultOptions
-        wsOptions.setSubprotocols(["pusher-channels-protocol-\(PROTOCOL)"])
-        let ws = NWWebSocket(url: URL(string: urlString)!, options: wsOptions)
-        connection = PusherConnection(key: key, socket: ws, url: urlString, options: options)
-        connection.createGlobalChannel()
+//        let wsOptions = NWWebSocket.defaultOptions
+//        wsOptions.setSubprotocols(["pusher-channels-protocol-\(PROTOCOL)"])
+//        let ws = NWWebSocket(url: URL(string: urlString)!, options: wsOptions)
+		self.connection = PusherConnection(key: key, url: urlString, options: options)
+		self.connection.createGlobalChannel()
     }
 
     /**

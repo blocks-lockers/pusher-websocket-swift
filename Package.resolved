@@ -2,12 +2,21 @@
   "object": {
     "pins": [
       {
-        "package": "NWWebSocket",
-        "repositoryURL": "https://github.com/pusher/NWWebSocket.git",
+        "package": "swift-nio",
+        "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
           "branch": null,
-          "revision": "eed470bc3607bc4893046f461107ec463dbd1220",
-          "version": "0.5.2"
+          "revision": "3be4e0980075de10a4bc8dee07491d49175cfd7a",
+          "version": "2.27.0"
+        }
+      },
+      {
+        "package": "swift-nio-ssl",
+        "repositoryURL": "https://github.com/apple/swift-nio-ssl.git",
+        "state": {
+          "branch": null,
+          "revision": "07c160b8724ee53a4b776328122be6338ff12bf2",
+          "version": "2.11.0"
         }
       },
       {
@@ -17,6 +26,15 @@
           "branch": null,
           "revision": "d1552db4d907f2c5cb3d1bf1336496b2e16c8ecf",
           "version": "1.0.2"
+        }
+      },
+      {
+        "package": "websocket-kit",
+        "repositoryURL": "https://github.com/vapor/websocket-kit",
+        "state": {
+          "branch": null,
+          "revision": "2b06a70dfcfa76a2e5079f60e3ae911511f09db0",
+          "version": "2.1.2"
         }
       }
     ]

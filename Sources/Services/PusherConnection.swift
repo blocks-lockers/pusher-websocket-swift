@@ -1,5 +1,8 @@
 import Foundation
-import NWWebSocket
+import WebSocketKit
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 // swiftlint:disable file_length type_body_length
 
@@ -12,7 +15,7 @@ import NWWebSocket
     open var socketId: String?
     open var connectionState = ConnectionState.disconnected
     open var channels = PusherChannels()
-    open var socket: NWWebSocket!
+    open var socket: WebSocket!
     open var URLSession: Foundation.URLSession
     open var userDataFetcher: (() -> PusherPresenceChannelMember)?
     open var reconnectAttemptsMax: Int?
@@ -60,7 +63,6 @@ import NWWebSocket
     */
     public init(
         key: String,
-        socket: NWWebSocket,
         url: String,
         options: PusherClientOptions,
         URLSession: Foundation.URLSession = Foundation.URLSession.shared
@@ -69,7 +71,7 @@ import NWWebSocket
         self.key = key
         self.options = options
         self.URLSession = URLSession
-        self.socket = socket
+//        self.socket = socket
         self.activityTimeoutInterval = options.activityTimeout ?? 60
 
         self.eventFactory = ChannelEventFactory()
@@ -78,7 +80,7 @@ import NWWebSocket
         super.init()
 
         self.eventQueue.delegate = self
-        self.socket.delegate = self
+//        self.socket.delegate = self
     }
 
     deinit {
@@ -207,7 +209,7 @@ import NWWebSocket
                                             Constants.JSONKeys.data: data])
             Logger.shared.debug(for: .eventSent,
                                 context: dataString)
-            self.socket.send(string: dataString)
+			self.socket.send(dataString)
         }
     }
 
@@ -229,7 +231,7 @@ import NWWebSocket
                                             Constants.JSONKeys.channel: channel.name] as [String: Any])
             Logger.shared.debug(for: .clientEventSent,
                                 context: dataString)
-            self.socket.send(string: dataString)
+            self.socket.send(dataString)
         } else {
             Logger.shared.debug(for: .cannotSendClientEventForChannel)
         }
@@ -263,7 +265,7 @@ import NWWebSocket
         if self.connectionState == .connected {
             intentionalDisconnect = true
             updateConnectionState(to: .disconnecting)
-            self.socket.disconnect()
+            _ = self.socket.close()
         }
     }
 
@@ -278,7 +280,21 @@ import NWWebSocket
             return
         } else {
             updateConnectionState(to: .connecting)
-            self.socket.connect()
+//            self.socket.connect()
+
+			let _url = URL(string: url)!
+			let scheme = _url.scheme ?? "ws"
+			let wsClient = WebSocketClient(eventLoopGroupProvider: .createNew)
+			_ = wsClient.connect(
+				scheme: scheme,
+				host: _url.host ?? "localhost",
+				port: _url.port ?? (scheme == "wss" ? 443 : 80),
+				onUpgrade: { ws in
+					self.socket = ws
+					self.connectionState = .connected
+					self.handleSocket(ws)
+				}
+			)
         }
     }
 
@@ -409,7 +425,7 @@ import NWWebSocket
         Send a ping to the server
     */
     @objc private func sendPing() {
-        socket.ping()
+        socket.sendPing()
         Logger.shared.debug(for: .pingSent)
         self.setupPongResponseTimeoutTimer()
     }
