@@ -1,5 +1,7 @@
-import CryptoKit
 import Foundation
+#if canImport(CryptoKit)
+import CryptoKit
+#endif
 //import TweetNacl
 
 struct Crypto {
@@ -17,12 +19,16 @@ struct Crypto {
     ///   - message: The message.
     /// - Returns: The hex-encoded MAC string.
     static func generateSHA256HMAC(secret: String, message: String) -> String {
+		#if canImport(CryptoKit)
         let key = SymmetricKey(data: Data(secret.utf8))
         let signature = HMAC<SHA256>.authenticationCode(for: Data(message.utf8), using: key)
 
         return signature
             .map { String(format: "%02hhx", $0) }
             .joined()
+		#else
+		return ""
+		#endif
     }
 
     /// Decrypts some data `String` using a key, according to the NaCl secret box algorithm.
