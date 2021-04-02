@@ -1,9 +1,9 @@
 import Foundation
-import WebSocketKit
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-import NIO
+//import WebSocketKit
+//import NIO
 
 // swiftlint:disable file_length type_body_length
 
@@ -16,8 +16,8 @@ import NIO
     open var socketId: String?
     open var connectionState = ConnectionState.disconnected
     open var channels = PusherChannels()
-	open var socketGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    open var socket: WebSocket!
+//	open var socketGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+//    open var socket: WebSocket!
     open var URLSession: Foundation.URLSession
     open var userDataFetcher: (() -> PusherPresenceChannelMember)?
     open var reconnectAttemptsMax: Int?
@@ -211,7 +211,7 @@ import NIO
                                             Constants.JSONKeys.data: data])
             Logger.shared.debug(for: .eventSent,
                                 context: dataString)
-			self.socket.send(dataString)
+//			self.socket.send(dataString)
         }
     }
 
@@ -233,7 +233,7 @@ import NIO
                                             Constants.JSONKeys.channel: channel.name] as [String: Any])
             Logger.shared.debug(for: .clientEventSent,
                                 context: dataString)
-            self.socket.send(dataString)
+//            self.socket.send(dataString)
         } else {
             Logger.shared.debug(for: .cannotSendClientEventForChannel)
         }
@@ -267,7 +267,7 @@ import NIO
         if self.connectionState == .connected {
             intentionalDisconnect = true
             updateConnectionState(to: .disconnecting)
-            _ = self.socket.close()
+//            _ = self.socket.close()
         }
     }
 
@@ -283,24 +283,24 @@ import NIO
         } else {
             updateConnectionState(to: .connecting)
 
-			let _url = URL(string: url)!
-			let scheme = _url.scheme ?? "ws"
-			var path = _url.path
-			if let query = _url.query {
-				path += "?" + query
-			}
-			let wsClient = WebSocketClient(eventLoopGroupProvider: .shared(socketGroup))
-			_ = wsClient.connect(
-				scheme: scheme,
-				host: _url.host ?? "localhost",
-				port: _url.port ?? (scheme == "wss" ? 443 : 80),
-				path: path,
-				onUpgrade: { ws in
-					self.socket = ws
-					self.socketConnected = true
-					self.handleSocket(ws)
-				}
-			)
+//			let _url = URL(string: url)!
+//			let scheme = _url.scheme ?? "ws"
+//			var path = _url.path
+//			if let query = _url.query {
+//				path += "?" + query
+//			}
+//			let wsClient = WebSocketClient(eventLoopGroupProvider: .shared(socketGroup))
+//			_ = wsClient.connect(
+//				scheme: scheme,
+//				host: _url.host ?? "localhost",
+//				port: _url.port ?? (scheme == "wss" ? 443 : 80),
+//				path: path,
+//				onUpgrade: { ws in
+//					self.socket = ws
+//					self.socketConnected = true
+//					self.handleSocket(ws)
+//				}
+//			)
         }
     }
 
@@ -392,7 +392,7 @@ import NIO
         connectionEstablishedMessageReceived = false
         socketId = nil
 
-        attemptReconnect()
+//        attemptReconnect()
     }
 
     /**
@@ -431,7 +431,7 @@ import NIO
         Send a ping to the server
     */
     @objc private func sendPing() {
-        socket.sendPing()
+//        socket.sendPing()
         Logger.shared.debug(for: .pingSent)
         self.setupPongResponseTimeoutTimer()
     }

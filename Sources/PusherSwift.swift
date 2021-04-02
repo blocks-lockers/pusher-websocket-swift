@@ -1,5 +1,5 @@
 import Foundation
-import WebSocketKit
+//import WebSocketKit
 
 let PROTOCOL = 7
 let VERSION = "9.2.2"

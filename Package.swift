@@ -9,14 +9,14 @@ let package = Package(
         .library(name: "PusherSwift", targets: ["PusherSwift"])
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/websocket-kit", .upToNextMajor(from: "2.1.2")),
+//      .package(url: "https://github.com/vapor/websocket-kit", .upToNextMajor(from: "2.1.2")),
 //      .package(url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap", .upToNextMajor(from: "1.0.0")),
     ],
     targets: [
         .target(
             name: "PusherSwift",
             dependencies: [
-                "WebSocketKit",
+//              "WebSocketKit",
 //              "TweetNacl",
             ],
             path: "Sources"
