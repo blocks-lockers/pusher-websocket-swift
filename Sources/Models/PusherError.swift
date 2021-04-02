@@ -1,6 +1,5 @@
 import Foundation
 
-@objcMembers
 open class PusherError: NSObject {
 
     /// Code is optional, message is not:
@@ -11,9 +10,9 @@ open class PusherError: NSObject {
     public let message: String
 
     // The websocket payload which needs to passed to legacy callbacks for backwards compatibility
-    @nonobjc internal let raw: [String: Any]
+    internal let raw: [String: Any]
 
-    @nonobjc internal init?(jsonObject: [String: Any]) {
+    internal init?(jsonObject: [String: Any]) {
         guard let data = jsonObject[Constants.JSONKeys.data] as? [String: Any] else {
             return nil
         }

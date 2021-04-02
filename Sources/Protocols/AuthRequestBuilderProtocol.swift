@@ -3,6 +3,6 @@ import Foundation
 import FoundationNetworking
 #endif
 
-@objc public protocol AuthRequestBuilderProtocol {
-    @objc optional func requestFor(socketID: String, channelName: String) -> URLRequest?
+public protocol AuthRequestBuilderProtocol {
+    func requestFor(socketID: String, channelName: String) -> URLRequest?
 }

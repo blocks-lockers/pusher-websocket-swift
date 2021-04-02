@@ -1,10 +1,9 @@
 import Foundation
 
-@objcMembers
 open class PusherEvent: NSObject, NSCopying {
 
     /// The JSON object received from the websocket
-    @nonobjc internal let raw: [String: Any]
+    internal let raw: [String: Any]
 
     /// According to Channels protocol, there is always an event
     /// https://pusher.com/docs/channels/library_auth_reference/pusher-websockets-protocol#events
@@ -21,7 +20,7 @@ open class PusherEvent: NSObject, NSCopying {
     /// The ID of the user who triggered the event. Only present in client event on presence channels.
     public let userId: String?
 
-    @nonobjc internal init(eventName: String,
+    internal init(eventName: String,
                            channelName: String?,
                            data: String?,
                            userId: String?,
@@ -38,7 +37,7 @@ open class PusherEvent: NSObject, NSCopying {
 
      - returns: The JSON as Swift data types
     */
-    @nonobjc internal func dataToJSONObject() -> Any? {
+    internal func dataToJSONObject() -> Any? {
         guard let data = self.data else {
             return nil
         }
@@ -68,7 +67,7 @@ open class PusherEvent: NSObject, NSCopying {
 
      - returns: The new `PusherEvent`
      */
-    @nonobjc internal func copy(withEventName eventName: String) -> PusherEvent {
+    internal func copy(withEventName eventName: String) -> PusherEvent {
         var jsonObject = self.raw
         jsonObject[Constants.JSONKeys.event] = eventName
         return PusherEvent(eventName: eventName,

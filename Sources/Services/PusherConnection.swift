@@ -7,8 +7,7 @@ import FoundationNetworking
 
 // swiftlint:disable file_length type_body_length
 
-@objcMembers
-@objc open class PusherConnection: NSObject {
+open class PusherConnection: NSObject {
     public let url: String
     public let key: String
     open var options: PusherClientOptions
@@ -357,7 +356,7 @@ import FoundationNetworking
     internal func updateConnectionState(to newState: ConnectionState) {
         let oldState = self.connectionState
         self.connectionState = newState
-        self.delegate?.changedConnectionState?(from: oldState, to: newState)
+        self.delegate?.changedConnectionState(from: oldState, to: newState)
     }
 
     /**
@@ -429,7 +428,7 @@ import FoundationNetworking
     /**
         Send a ping to the server
     */
-    @objc private func sendPing() {
+    private func sendPing() {
 //        socket.sendPing()
         Logger.shared.debug(for: .pingSent)
         self.setupPongResponseTimeoutTimer()
@@ -452,7 +451,7 @@ import FoundationNetworking
         Invalidate the pongResponseTimeoutTimer and set connection state to disconnected
         as well as marking channels as unsubscribed
     */
-    @objc private func cleanupAfterNoPongResponse() {
+	private func cleanupAfterNoPongResponse() {
         pongResponseTimeoutTimer?.invalidate()
         pongResponseTimeoutTimer = nil
         resetConnectionAndAttemptReconnect()
@@ -491,7 +490,7 @@ import FoundationNetworking
         callGlobalCallbacks(event: subscriptionEvent)
         chan.handleEvent(event: subscriptionEvent)
 
-        self.delegate?.subscribedToChannel?(name: channelName)
+        self.delegate?.subscribedToChannel(name: channelName)
 
         chan.auth = nil
 
@@ -584,7 +583,7 @@ import FoundationNetworking
      */
     open func handleError(error: PusherError) {
         resetActivityTimeoutTimer()
-        self.delegate?.receivedError?(error: error)
+        self.delegate?.receivedError(error: error)
         self.globalChannel?.handleGlobalEventLegacy(event: error.raw)
     }
 
@@ -610,7 +609,7 @@ import FoundationNetworking
             self.handleEvent(event: event)
         }
 
-        self.delegate?.failedToSubscribeToChannel?(name: channelName,
+        self.delegate?.failedToSubscribeToChannel(name: channelName,
                                                    response: error.response,
                                                    data: error.data,
                                                    error: error.error)
@@ -716,7 +715,7 @@ import FoundationNetworking
             return true
 
         case .authRequestBuilder(authRequestBuilder: let builder):
-            if let request = builder.requestFor?(socketID: socketId, channelName: channel.name) {
+            if let request = builder.requestFor(socketID: socketId, channelName: channel.name) {
                 sendAuthorizationRequest(request: request, channel: channel, completionHandler: completionHandler)
                 return true
             } else {
@@ -968,7 +967,7 @@ extension PusherConnection: EventQueueDelegate {
         DispatchQueue.main.async {
             if let eventName = payload[Constants.JSONKeys.event] as? String {
                 let data = payload[Constants.JSONKeys.data] as? String
-                self.delegate?.failedToDecryptEvent?(eventName: eventName, channelName: channelName, data: data)
+                self.delegate?.failedToDecryptEvent(eventName: eventName, channelName: channelName, data: data)
             }
             Logger.shared.debug(for: .skippedEventAfterDecryptionFailure,
                                 context: channelName)

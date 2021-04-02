@@ -124,6 +124,6 @@ class Logger {
             message += " \(context)"
         }
 
-        self.delegate?.debugLog?(message: message)
+        self.delegate?.debugLog(message: message)
     }
 }

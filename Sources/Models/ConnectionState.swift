@@ -1,6 +1,6 @@
 import Foundation
 
-@objc public enum ConnectionState: Int {
+public enum ConnectionState: Int {
     case connecting
     case connected
     case disconnecting

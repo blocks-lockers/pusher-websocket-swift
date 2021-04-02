@@ -2,8 +2,7 @@ import Foundation
 
 public typealias PusherUserInfoObject = [String: AnyObject]
 
-@objcMembers
-@objc open class PusherPresenceChannel: PusherChannel {
+open class PusherPresenceChannel: PusherChannel {
     open var members: [PusherPresenceChannelMember]
     open var onMemberAdded: ((PusherPresenceChannelMember) -> Void)?
     open var onMemberRemoved: ((PusherPresenceChannelMember) -> Void)?

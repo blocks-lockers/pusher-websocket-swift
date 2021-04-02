@@ -1,7 +1,6 @@
 import Foundation
 
-@objcMembers
-@objc public class PusherClientOptions: NSObject {
+public class PusherClientOptions: NSObject {
     public var authMethod: AuthMethod
     public let attemptToReturnJSONObject: Bool
     public let autoReconnect: Bool
@@ -11,7 +10,7 @@ import Foundation
     public let useTLS: Bool
     public let activityTimeout: TimeInterval?
 
-    @nonobjc public init(
+    public init(
         authMethod: AuthMethod = .noMethod,
         attemptToReturnJSONObject: Bool = true,
         autoReconnect: Bool = true,

@@ -1,7 +1,6 @@
 import Foundation
 
-@objcMembers
-@objc public class PusherPresenceChannelMember: NSObject {
+public class PusherPresenceChannelMember: NSObject {
     public let userId: String
     public let userInfo: Any?
 

@@ -1,7 +1,6 @@
 import Foundation
 
-@objcMembers
-@objc open class PusherChannels: NSObject {
+open class PusherChannels: NSObject {
     // Access via queue for thread safety if user subscribes/unsubscribes to a channel off the main queue
     // (Concurrent reads are allowed. Writes using `.barrier` so queue waits for completion before continuing)
     private let channelsQueue = DispatchQueue(label: "com.pusher.pusherswift-channels-\(UUID().uuidString)",
