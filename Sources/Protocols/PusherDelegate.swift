@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 @objc public protocol PusherDelegate: AnyObject {
     @objc optional func debugLog(message: String)
