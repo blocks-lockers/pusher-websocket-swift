@@ -18,7 +18,7 @@ import FoundationNetworking
     open var channels = PusherChannels()
 //	open var socketGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
 //    open var socket: WebSocket!
-    open var URLSession: Foundation.URLSession
+    open var URLSession: URLSession
     open var userDataFetcher: (() -> PusherPresenceChannelMember)?
     open var reconnectAttemptsMax: Int?
     open var reconnectAttempts: Int = 0
@@ -67,7 +67,7 @@ import FoundationNetworking
         key: String,
         url: String,
         options: PusherClientOptions,
-        URLSession: Foundation.URLSession = Foundation.URLSession.shared
+        URLSession: URLSession = .shared
     ) {
         self.url = url
         self.key = key
