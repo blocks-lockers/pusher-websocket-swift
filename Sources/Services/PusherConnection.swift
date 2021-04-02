@@ -2,8 +2,7 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-//import WebSocketKit
-//import NIO
+import NIO
 
 // swiftlint:disable file_length type_body_length
 
@@ -15,8 +14,8 @@ open class PusherConnection: NSObject {
     open var socketId: String?
     open var connectionState = ConnectionState.disconnected
     open var channels = PusherChannels()
-//	open var socketGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-//    open var socket: WebSocket!
+	open var socketGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+    open var socket: WebSocket!
     open var URLSession: URLSession
     open var userDataFetcher: (() -> PusherPresenceChannelMember)?
     open var reconnectAttemptsMax: Int?
@@ -72,7 +71,6 @@ open class PusherConnection: NSObject {
         self.key = key
         self.options = options
         self.URLSession = URLSession
-//        self.socket = socket
         self.activityTimeoutInterval = options.activityTimeout ?? 60
 
         self.eventFactory = ChannelEventFactory()
@@ -81,7 +79,6 @@ open class PusherConnection: NSObject {
         super.init()
 
         self.eventQueue.delegate = self
-//        self.socket.delegate = self
     }
 
     deinit {
@@ -210,7 +207,7 @@ open class PusherConnection: NSObject {
                                             Constants.JSONKeys.data: data])
             Logger.shared.debug(for: .eventSent,
                                 context: dataString)
-//			self.socket.send(dataString)
+			self.socket.send(dataString)
         }
     }
 
@@ -232,7 +229,7 @@ open class PusherConnection: NSObject {
                                             Constants.JSONKeys.channel: channel.name] as [String: Any])
             Logger.shared.debug(for: .clientEventSent,
                                 context: dataString)
-//            self.socket.send(dataString)
+            self.socket.send(dataString)
         } else {
             Logger.shared.debug(for: .cannotSendClientEventForChannel)
         }
@@ -266,7 +263,7 @@ open class PusherConnection: NSObject {
         if self.connectionState == .connected {
             intentionalDisconnect = true
             updateConnectionState(to: .disconnecting)
-//            _ = self.socket.close()
+            _ = self.socket.close()
         }
     }
 
@@ -282,24 +279,24 @@ open class PusherConnection: NSObject {
         } else {
             updateConnectionState(to: .connecting)
 
-//			let _url = URL(string: url)!
-//			let scheme = _url.scheme ?? "ws"
-//			var path = _url.path
-//			if let query = _url.query {
-//				path += "?" + query
-//			}
-//			let wsClient = WebSocketClient(eventLoopGroupProvider: .shared(socketGroup))
-//			_ = wsClient.connect(
-//				scheme: scheme,
-//				host: _url.host ?? "localhost",
-//				port: _url.port ?? (scheme == "wss" ? 443 : 80),
-//				path: path,
-//				onUpgrade: { ws in
-//					self.socket = ws
-//					self.socketConnected = true
-//					self.handleSocket(ws)
-//				}
-//			)
+			let _url = URL(string: url)!
+			let scheme = _url.scheme ?? "ws"
+			var path = _url.path
+			if let query = _url.query {
+				path += "?" + query
+			}
+			let wsClient = WebSocketClient(eventLoopGroupProvider: .shared(socketGroup))
+			_ = wsClient.connect(
+				scheme: scheme,
+				host: _url.host ?? "localhost",
+				port: _url.port ?? (scheme == "wss" ? 443 : 80),
+				path: path,
+				onUpgrade: { ws in
+					self.socket = ws
+					self.socketConnected = true
+					self.handleSocket(ws)
+				}
+			)
         }
     }
 
@@ -391,7 +388,7 @@ open class PusherConnection: NSObject {
         connectionEstablishedMessageReceived = false
         socketId = nil
 
-//        attemptReconnect()
+        attemptReconnect()
     }
 
     /**

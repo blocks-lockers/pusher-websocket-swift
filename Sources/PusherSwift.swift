@@ -1,10 +1,9 @@
 import Foundation
-//import WebSocketKit
 
 let PROTOCOL = 7
 let VERSION = "9.2.2"
 // swiftlint:disable:next identifier_name
-let CLIENT_NAME = "pusher-websocket-swift"
+let CLIENT_NAME = "pusher-websocket-swift-linux"
 
 open class Pusher: NSObject {
     public let connection: PusherConnection
@@ -26,9 +25,6 @@ open class Pusher: NSObject {
     public init(key: String, options: PusherClientOptions = PusherClientOptions()) {
         self.key = key
         let urlString = URL.channelsSocketUrl(key: key, options: options)
-//        let wsOptions = NWWebSocket.defaultOptions
-//        wsOptions.setSubprotocols(["pusher-channels-protocol-\(PROTOCOL)"])
-//        let ws = NWWebSocket(url: URL(string: urlString)!, options: wsOptions)
 		self.connection = PusherConnection(key: key, url: urlString, options: options)
 		self.connection.createGlobalChannel()
     }
