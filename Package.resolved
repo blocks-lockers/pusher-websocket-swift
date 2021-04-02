@@ -20,15 +20,6 @@
         }
       },
       {
-        "package": "TweetNacl",
-        "repositoryURL": "https://github.com/bitmark-inc/tweetnacl-swiftwrap",
-        "state": {
-          "branch": null,
-          "revision": "d1552db4d907f2c5cb3d1bf1336496b2e16c8ecf",
-          "version": "1.0.2"
-        }
-      },
-      {
         "package": "websocket-kit",
         "repositoryURL": "https://github.com/vapor/websocket-kit",
         "state": {

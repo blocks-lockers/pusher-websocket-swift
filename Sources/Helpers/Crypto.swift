@@ -1,6 +1,6 @@
 import CryptoKit
 import Foundation
-import TweetNacl
+//import TweetNacl
 
 struct Crypto {
 
@@ -32,27 +32,29 @@ struct Crypto {
     /// - Throws: An `EventError` if the decryption operation fails for some reason.
     /// - Returns: The decrypted data `String`.
     static func decrypt(data: String?, decryptionKey: String?) throws -> String? {
-        guard let data = data else {
-            return nil
-        }
+        return nil
 
-        guard let decryptionKey = decryptionKey else {
-            throw EventError.invalidDecryptionKey
-        }
-
-        let encryptedData = try self.encryptedData(fromData: data)
-        let cipherText = try self.decodedCipherText(fromEncryptedData: encryptedData)
-        let nonce = try self.decodedNonce(fromEncryptedData: encryptedData)
-        let secretKey = try self.decodedDecryptionKey(fromDecryptionKey: decryptionKey)
-
-        guard let decryptedData = try? NaclSecretBox.open(box: cipherText,
-                                                          nonce: nonce,
-                                                          key: secretKey),
-              let decryptedString = String(bytes: decryptedData, encoding: .utf8) else {
-            throw EventError.invalidDecryptionKey
-        }
-
-        return decryptedString
+//        guard let data = data else {
+//            return nil
+//        }
+//
+//        guard let decryptionKey = decryptionKey else {
+//            throw EventError.invalidDecryptionKey
+//        }
+//
+//        let encryptedData = try self.encryptedData(fromData: data)
+//        let cipherText = try self.decodedCipherText(fromEncryptedData: encryptedData)
+//        let nonce = try self.decodedNonce(fromEncryptedData: encryptedData)
+//        let secretKey = try self.decodedDecryptionKey(fromDecryptionKey: decryptionKey)
+//
+//        guard let decryptedData = try? NaclSecretBox.open(box: cipherText,
+//                                                          nonce: nonce,
+//                                                          key: secretKey),
+//              let decryptedString = String(bytes: decryptedData, encoding: .utf8) else {
+//            throw EventError.invalidDecryptionKey
+//        }
+//
+//        return decryptedString
     }
 
     // MARK: - Private methods
