@@ -418,13 +418,12 @@ import FoundationNetworking
         the activityTimeoutInterval
     */
     private func establishActivityTimeoutTimer() {
-        self.activityTimeoutTimer = Timer.scheduledTimer(
-            timeInterval: self.activityTimeoutInterval,
-            target: self,
-            selector: #selector(self.sendPing),
-            userInfo: nil,
-            repeats: false
-        )
+		activityTimeoutTimer = Timer.scheduledTimer(
+			withTimeInterval: activityTimeoutInterval,
+			repeats: false
+		) { _ in
+			self.sendPing()
+		}
     }
 
     /**
@@ -441,13 +440,12 @@ import FoundationNetworking
         pongResponseTimeoutInterval
     */
     private func setupPongResponseTimeoutTimer() {
-        pongResponseTimeoutTimer = Timer.scheduledTimer(
-            timeInterval: pongResponseTimeoutInterval,
-            target: self,
-            selector: #selector(cleanupAfterNoPongResponse),
-            userInfo: nil,
-            repeats: false
-        )
+		pongResponseTimeoutTimer = Timer.scheduledTimer(
+			withTimeInterval: pongResponseTimeoutInterval,
+			repeats: false
+		) { _ in
+			self.cleanupAfterNoPongResponse()
+		}
     }
 
     /**
